@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ProjectArchitecture.UI.Jobs": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
