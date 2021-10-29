@@ -46,6 +46,10 @@ The SPA pages are here. In this sample, I use Blazor however others could be use
 
 Sometimes projects want to do some action periodically. They will be in this part and services will be called by this jobs. They will host as windows service or docker service.
 
+### Test
+
+The test project is placed in this part to write tests.
+
 ## Contributors
 
 Special thanks to [Ali Jalali](https://github.com/aliprogrammer69) who help to complete this architecture.
