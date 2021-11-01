@@ -14,15 +14,12 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Bootstrapper\ProjectArchitecture.Bootstrapper\ProjectArchitecture.Bootstrapper.csproj" />
     <ProjectReference Include="..\..\Domain\ProjectArchitecture.Domain\ProjectArchitecture.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Jobs\" />
   </ItemGroup>
 
   <ItemGroup>

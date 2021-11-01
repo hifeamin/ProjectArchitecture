@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
+using ProjectArchitecture.UI.Jobs.Infra;
+
+using Quartz.Spi;
 
 namespace ProjectArchitecture.UI.Jobs.Extensions {
     public static class ServiceCollectionExtension {
@@ -14,7 +15,10 @@ namespace ProjectArchitecture.UI.Jobs.Extensions {
                                                           .AddJsonFile("appsettings.json")
                                                           .Build();
 
-            return services.AddSingleton(configurationRoot);
+            return services.AddSingleton(configurationRoot)
+                           .AddSingleton<IJobFactory, ServiceProviderAwareJobFactory>()
+                           .AddSingleton<IServiceManager, ServiceManager>()
+                           .AddTransient<Jobs.FooJob>();
         }
     }
 }
