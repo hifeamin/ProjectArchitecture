@@ -1,28 +1,73 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using NLog.Web;
+using ProjectArchitecture.Bootstrapper.Extensions;
 
-namespace ProjectArchitecture.UI.Api {
-    public class Program {
-        public static void Main(string[] args) {
-            CreateHostBuilder(args).Build().Run();
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.SetBasePath(AppContext.BaseDirectory)
+                     .AddJsonFile("appsettings.json", false, true);
+builder.WebHost.UseNLog();
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddServices()
+                    .AddControllers()
+                    .AddJsonOptions(opt => {
+                        opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+                        opt.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                        opt.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    });
+
+builder.Services.AddHealthChecks()
+        .AddCheck("AppHealthy", () => HealthCheckResult.Healthy());
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler(appError => {
+        appError.Run(async context => {
+            var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+            if (contextFeature != null)
+            {
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(JsonSerializer.Serialize(new
+                {
+                    Code = 500,
+                    Message = "Internal Server Error Occurred. Please Call Provider!"
+                }));
+            }
+        });
+    });
+}
+
+app.UseAuthorization();
+app.UseRouting();
+app.MapControllers();
+app.MapHealthChecks("/health", new HealthCheckOptions()
+{
+    ResponseWriter = (context, healthreport) => {
+        if (healthreport.Status == HealthStatus.Healthy)
+        {
+            context.Response.StatusCode = 200;
+            return context.Response.WriteAsync("it works fine. :-)", Encoding.UTF8);
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration(config => {
-                    config.SetBasePath(AppContext.BaseDirectory);
-                    config.AddJsonFile("appsettings.json", false, true);
-                })
-                .ConfigureWebHostDefaults(webBuilder => {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .UseNLog();
+        context.Response.StatusCode = 500;
+        return context.Response.WriteAsync("app is not healthy :-(", Encoding.UTF8);
     }
-}
+});
+
+app.Run();
